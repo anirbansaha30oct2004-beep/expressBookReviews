@@ -185,23 +185,39 @@ public_users.get('/async/author/:author', async function (req, res) {
 });
 
 // Task 13: Get all books details based on title using Axios with Async/Await
-public_users.get('/async/title/:title', async function (req, res) {
-  const title = req.params.title;
+// Task 13: Get book details based on Title using Promises/Async-Await
+public_users.get('/title/:title', async function (req, res) {
+  const title = req.params.title.toLowerCase();
+
   try {
-    let output = [];
-    for (let isbn in books) {
-      if (books[isbn].title.toLowerCase() === title.toLowerCase()) {
-        output.push(books[isbn]);
-      }
-    }
-    if (output.length > 0) {
-      await axios.get('http://localhost:5000/');
-      return res.status(200).send(JSON.stringify(output, null, 4));
-    } else {
-      return res.status(404).json({ message: "No books found with this title" });
-    }
+    const getBooksByTitle = () => {
+      return new Promise((resolve, reject) => {
+        let filteredBooks = [];
+        const isbnKeys = Object.keys(books);
+
+        isbnKeys.forEach((isbn) => {
+          if (books[isbn].title.toLowerCase() === title) {
+            filteredBooks.push({
+              isbn: isbn,
+              author: books[isbn].author,
+              reviews: books[isbn].reviews
+            });
+          }
+        });
+
+        if (filteredBooks.length > 0) {
+          resolve(filteredBooks);
+        } else {
+          reject({ message: "No books found with this title" });
+        }
+      });
+    };
+
+    const titleBooks = await getBooksByTitle();
+    return res.status(200).json(titleBooks);
+
   } catch (error) {
-    return res.status(404).json({ message: "Error fetching details" });
+    return res.status(404).json(error);
   }
 });
 
