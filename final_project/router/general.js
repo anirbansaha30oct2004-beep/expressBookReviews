@@ -48,12 +48,26 @@ public_users.get('/', async function (req, res) {
 });
 
 // Task 2: Get book details based on ISBN
-public_users.get('/isbn/:isbn', function (req, res) {
+// Task 11: Get book details based on ISBN using Promises/Async-Await
+public_users.get('/isbn/:isbn', async function (req, res) {
   const isbn = req.params.isbn;
-  if (books[isbn]) {
-    return res.status(200).send(JSON.stringify(books[isbn], null, 4));
-  } else {
-    return res.status(404).json({ message: "Book not found by this ISBN" });
+
+  try {
+    const getBookDetails = () => {
+      return new Promise((resolve, reject) => {
+        if (books[isbn]) {
+          resolve(books[isbn]);
+        } else {
+          reject({ message: "Book not found with this ISBN" });
+        }
+      });
+    };
+
+    const bookDetails = await getBookDetails();
+    return res.status(200).json(bookDetails);
+
+  } catch (error) {
+    return res.status(404).json(error);
   }
 });
   
